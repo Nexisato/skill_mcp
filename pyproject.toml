@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
-    { name = "Skill MCP Server Contributors" }
+    { name = "ephemeraldew", email = "ephemeraldew@users.noreply.github.com" }
 ]
 keywords = [
     "mcp",
@@ -51,11 +51,11 @@ dev = [
 skill-mcp-server = "skill_mcp_server.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/your-org/skill-mcp-server"
-Documentation = "https://github.com/your-org/skill-mcp-server#readme"
-Repository = "https://github.com/your-org/skill-mcp-server"
-Issues = "https://github.com/your-org/skill-mcp-server/issues"
-Changelog = "https://github.com/your-org/skill-mcp-server/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/ephemeraldew/skill_mcp"
+Documentation = "https://github.com/ephemeraldew/skill_mcp#readme"
+Repository = "https://github.com/ephemeraldew/skill_mcp"
+Issues = "https://github.com/ephemeraldew/skill_mcp/issues"
+Changelog = "https://github.com/ephemeraldew/skill_mcp/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/skill_mcp_server"]
