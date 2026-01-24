@@ -5,11 +5,11 @@
 </p>
 
 <p align="center">
-  <a href="#特性">特性</a> •
-  <a href="#快速开始">快速开始</a> •
-  <a href="#工作原理">工作原理</a> •
-  <a href="#创建-skill">创建 Skill</a> •
-  <a href="#文档">文档</a>
+  <a href="#特性"> ✨ 特性</a> •
+  <a href="#快速开始">🚀 快速开始</a> •
+  <a href="#工作原理">⚡️ 工作原理</a> •
+  <a href="#创建-skill">⚙️ 创建 Skill</a> •
+  <a href="#文档">📚 文档</a>
 </p>
 
 ---
@@ -18,7 +18,7 @@
 
 可以把它理解为 **AI Agent 的插件系统** — 将 Skill 文件夹放入目录，你的 Agent 就立即获得新能力。无需编码，无需重启服务。
 
-## 为什么选择 Skill MCP Server？
+## 🆚 为什么选择 Skill MCP Server？
 
 | 传统方式 | 使用 Skill MCP Server |
 |---------|---------------------|
@@ -27,7 +27,7 @@
 | 每个能力都要单独开发 | 社区共享，即插即用 |
 | 复杂的集成工作 | 零配置 |
 
-## 特性
+## ✨ 特性
 
 - **即时扩展能力** — 放入 Skill 文件夹，立即获得新能力
 - **零配置** — Skills 自动发现和加载
@@ -36,7 +36,7 @@
 - **安全设计** — 路径验证、沙箱化文件操作
 - **资源捆绑** — Skill 可包含模板、参考文档和资源文件
 
-## 快速开始
+## 🚀 快速开始
 
 ### 安装
 
@@ -96,7 +96,7 @@ skill-mcp-server --skills-dir ./skills
 }
 ```
 
-## 工作原理
+## ⚡️ 工作原理
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -136,7 +136,7 @@ skill-mcp-server --skills-dir ./skills
 | `file_write` | 向工作目录写入文件 |
 | `file_edit` | 编辑工作目录中的现有文件 |
 
-## 创建 Skill
+## ⚙️ 创建 Skill
 
 Skill 就是一个包含 `SKILL.md` 文件的文件夹：
 
@@ -200,7 +200,7 @@ description: 分析 CSV 数据并生成洞察报告
 4. 使用 `file_write` 写入报告
 ```
 
-## 使用场景
+## 📊 使用场景
 
 - **数据分析** — Agent 变身数据科学家
 - **文档生成** — Agent 创建专业文档
@@ -208,14 +208,14 @@ description: 分析 CSV 数据并生成洞察报告
 - **代码审查** — Agent 遵循团队规范
 - **DevOps 任务** — Agent 自动化部署流程
 
-## 文档
+## 📚 文档
 
 - [快速入门指南](docs/getting-started.md)
 - [创建 Skills](docs/creating-skills.md)
 - [Skill 格式参考](docs/skill-format.md)
 - [API 参考](docs/api/)
 
-## 开发
+## 🔨 开发
 
 ```bash
 # 克隆仓库
@@ -232,11 +232,11 @@ pytest
 ruff check src/
 ```
 
-## 贡献
+## 👥 贡献
 
 欢迎贡献！请参阅 [CONTRIBUTING.md](CONTRIBUTING.md) 了解指南。
 
-## 许可证
+## 📃 许可证
 
 MIT License - 详见 [LICENSE](LICENSE)
 

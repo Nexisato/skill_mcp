@@ -5,11 +5,11 @@
 </p>
 
 <p align="center">
-  <a href="#features">Features</a> •
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#how-it-works">How It Works</a> •
-  <a href="#creating-skills">Creating Skills</a> •
-  <a href="#documentation">Documentation</a>
+  <a href="#features">✨ Features</a> •
+  <a href="#quick-start">🚀 Quick Start</a> •
+  <a href="#how-it-works">⚡️ How It Works</a> •
+  <a href="#creating-skills">⚙️ Creating Skills</a> •
+  <a href="#documentation">📚 Documentation</a>
 </p>
 
 ---
@@ -18,7 +18,7 @@
 
 Think of it as a **plugin system for AI agents** — drop a skill folder into the directory, and your agent instantly gains new capabilities. No coding required, no server restarts needed.
 
-## Why Skill MCP Server?
+## 🆚  Why Skill MCP Server?
 
 | Traditional Approach | With Skill MCP Server |
 |---------------------|----------------------|
@@ -27,7 +27,7 @@ Think of it as a **plugin system for AI agents** — drop a skill folder into th
 | Each capability developed separately | Community-shared, plug-and-play |
 | Complex integration work | Zero configuration |
 
-## Features
+## ✨ Features
 
 - **Instant Capability Extension** — Drop skill folders, gain superpowers
 - **Zero Configuration** — Skills are auto-discovered and loaded
@@ -36,7 +36,7 @@ Think of it as a **plugin system for AI agents** — drop a skill folder into th
 - **Secure by Design** — Path validation, sandboxed file operations
 - **Resource Bundling** — Include templates, references, and assets with skills
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Installation
 
@@ -96,7 +96,7 @@ Add to your `~/.claude.json`:
 }
 ```
 
-## How It Works
+## ⚡️ How It Works
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -136,7 +136,7 @@ Add to your `~/.claude.json`:
 | `file_write` | Write files to workspace |
 | `file_edit` | Edit existing files in workspace |
 
-## Creating Skills
+## ⚙️ Creating Skills
 
 A skill is simply a folder containing a `SKILL.md` file:
 
@@ -200,7 +200,7 @@ Use this skill when the user wants to:
 4. Write the report using `file_write`
 ```
 
-## Use Cases
+## 📊 Use Cases
 
 - **Data Analysis** — Agent becomes a data scientist
 - **Document Generation** — Agent creates professional documents
@@ -208,14 +208,14 @@ Use this skill when the user wants to:
 - **Code Review** — Agent follows your team's standards
 - **DevOps Tasks** — Agent automates deployment workflows
 
-## Documentation
+## 📚 Documentation
 
 - [Getting Started Guide](docs/getting-started.md)
 - [Creating Skills](docs/creating-skills.md)
 - [Skill Format Reference](docs/skill-format.md)
 - [API Reference](docs/api/)
 
-## Development
+## 🔨 Development
 
 ```bash
 # Clone the repository
@@ -232,11 +232,11 @@ pytest
 ruff check src/
 ```
 
-## Contributing
+## 👥 Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## License
+## 📃 License
 
 MIT License - see [LICENSE](LICENSE) for details.
 
