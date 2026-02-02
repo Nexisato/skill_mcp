@@ -20,6 +20,13 @@ Example:
     >>> asyncio.run(server.run())
 """
 
+# Early silent mode check - must happen before any logging
+import logging as _logging
+import os as _os
+
+if _os.environ.get("SKILL_MCP_LOG_LEVEL", "").upper() == "SILENT":
+    _logging.disable(_logging.CRITICAL)
+
 from .config.settings import Settings
 from .core.server import SkillMCPServer, create_server
 from .skill.manager import SkillManager

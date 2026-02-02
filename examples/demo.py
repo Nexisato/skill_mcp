@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
 """
-Simple interactive MCP client using OpenAI SDK
-Connects to skill-mcp-server via stdio protocol
+Skill MCP Client (Beginner-Friendly Demo)
+
+这是一个「干净、安静、适合入门」的终端 AI 示例程序。
+默认只显示用户输入和 AI 输出，不展示任何内部日志。
+
+用法：
+  python demo.py --skills-dir ./skills
+  python demo.py --skills-dir ./skills --verbose
 """
 
+import argparse
 import asyncio
 import json
+import logging
+import os
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -14,197 +24,274 @@ from mcp.client.stdio import stdio_client
 from openai import AsyncOpenAI
 
 
-class InteractiveMCPClient:
-    """Interactive MCP client with OpenAI integration"""
+# =========================
+# 全局 CLI 行为配置
+# =========================
+QUIET = True  # 默认安静（适合 demo & 新手）
 
-    def __init__(self, openai_client: AsyncOpenAI, mcp_session: ClientSession):
-        self.openai_client = openai_client
-        self.mcp_session = mcp_session
-        self.tools = []
-        self.conversation_history = []
 
-    async def initialize(self):
-        """Initialize MCP connection and load available tools"""
-        print("🔧 Initializing MCP client...")
+# =========================
+# 终端输出工具
+# =========================
+class Console:
+    RESET = "\033[0m"
+    DIM = "\033[2m"
+    BOLD = "\033[1m"
+    CYAN = "\033[36m"
+    RED = "\033[31m"
 
-        # List available tools from MCP server
-        response = await self.mcp_session.list_tools()
+    @staticmethod
+    def prompt():
+        return f"{Console.CYAN}>{Console.RESET} "
 
-        # Convert MCP tools to OpenAI function format
-        self.tools = []
-        for tool in response.tools:
-            openai_tool = {
+    @staticmethod
+    def info(msg: str):
+        print(f"{Console.DIM}{msg}{Console.RESET}")
+
+    @staticmethod
+    def error(msg: str):
+        print(f"{Console.RED}✗ {msg}{Console.RESET}", file=sys.stderr)
+
+    @staticmethod
+    def debug(msg: str):
+        if not QUIET:
+            print(f"{Console.DIM}{msg}{Console.RESET}")
+
+
+# =========================
+# MCP + OpenAI 客户端
+# =========================
+class MCPClient:
+    def __init__(
+        self,
+        openai_client: AsyncOpenAI,
+        session: ClientSession,
+        model: str,
+    ):
+        self.openai = openai_client
+        self.session = session
+        self.model = model
+
+        self.tools: list[dict] = []
+        self.messages: list[dict] = []
+
+    async def load_tools(self):
+        """从 MCP Server 加载工具定义"""
+        resp = await self.session.list_tools()
+
+        self.tools = [
+            {
                 "type": "function",
                 "function": {
-                    "name": tool.name,
-                    "description": tool.description or "",
-                    "parameters": tool.inputSchema
-                    if tool.inputSchema
-                    else {"type": "object", "properties": {}},
+                    "name": t.name,
+                    "description": t.description or "",
+                    "parameters": t.inputSchema
+                    or {"type": "object", "properties": {}},
                 },
             }
-            self.tools.append(openai_tool)
+            for t in resp.tools
+        ]
 
-        print(f"✅ Loaded {len(self.tools)} tools from MCP server")
-        if self.tools:
-            print("\n📋 Available tools:")
-            for tool in self.tools:
-                print(f"  - {tool['function']['name']}: {tool['function']['description']}")
-        print()
+        Console.debug(f"Loaded {len(self.tools)} tools")
 
-    async def call_tool(self, tool_name: str, arguments: dict[str, Any]) -> Any:
-        """Call MCP tool and return result"""
-        print(f"🔨 Calling tool: {tool_name}")
-        print(f"   Arguments: {json.dumps(arguments, indent=2)}")
-
+    async def call_tool(self, name: str, args: dict[str, Any]) -> str:
+        """执行工具"""
         try:
-            result = await self.mcp_session.call_tool(tool_name, arguments)
-            print(f"✅ Tool result: {result.content[0].text if result.content else 'No result'}\n")
-            return result.content[0].text if result.content else "Tool executed successfully"
+            result = await self.session.call_tool(name, args)
+            return result.content[0].text if result.content else ""
         except Exception as e:
-            error_msg = f"Error calling tool: {str(e)}"
-            print(f"❌ {error_msg}\n")
-            return error_msg
+            return f"Tool error: {e}"
 
-    async def chat(self, user_message: str) -> str:
-        """Send message and handle tool calls"""
-        # Add user message to history
-        self.conversation_history.append({"role": "user", "content": user_message})
+    async def chat(self, user_input: str) -> str:
+        """发送一条用户消息，返回 AI 最终回复"""
+        self.messages.append({"role": "user", "content": user_input})
 
         while True:
-            # Call OpenAI API
-            response = await self.openai_client.chat.completions.create(
-                model="gpt-4o",
-                messages=self.conversation_history,
-                tools=self.tools if self.tools else None,
+            resp = await self.openai.chat.completions.create(
+                model=self.model,
+                messages=self.messages,
+                tools=self.tools or None,
             )
 
-            message = response.choices[0].message
+            msg = resp.choices[0].message
 
-            # Check if model wants to call tools
-            if message.tool_calls:
-                # Add assistant message to history
-                self.conversation_history.append(
+            # 没有工具调用，说明这是最终回答
+            if not msg.tool_calls:
+                text = msg.content or ""
+                self.messages.append({"role": "assistant", "content": text})
+                return text
+
+            # 有工具调用：先记录 assistant 的请求
+            self.messages.append(
+                {
+                    "role": "assistant",
+                    "content": msg.content,
+                    "tool_calls": [
+                        {
+                            "id": tc.id,
+                            "type": "function",
+                            "function": {
+                                "name": tc.function.name,
+                                "arguments": tc.function.arguments,
+                            },
+                        }
+                        for tc in msg.tool_calls
+                    ],
+                }
+            )
+
+            # 逐个执行工具
+            for tc in msg.tool_calls:
+                name = tc.function.name
+                args = json.loads(tc.function.arguments)
+
+                Console.debug(f"→ tool: {name} {args}")
+
+                result = await self.call_tool(name, args)
+
+                self.messages.append(
                     {
-                        "role": "assistant",
-                        "content": message.content,
-                        "tool_calls": [
-                            {
-                                "id": tc.id,
-                                "type": "function",
-                                "function": {
-                                    "name": tc.function.name,
-                                    "arguments": tc.function.arguments,
-                                },
-                            }
-                            for tc in message.tool_calls
-                        ],
+                        "role": "tool",
+                        "tool_call_id": tc.id,
+                        "content": result,
                     }
                 )
 
-                # Execute each tool call
-                for tool_call in message.tool_calls:
-                    tool_name = tool_call.function.name
-                    arguments = json.loads(tool_call.function.arguments)
-
-                    # Call the MCP tool
-                    result = await self.call_tool(tool_name, arguments)
-
-                    # Add tool result to history
-                    self.conversation_history.append(
-                        {
-                            "role": "tool",
-                            "tool_call_id": tool_call.id,
-                            "content": str(result),
-                        }
-                    )
-
-                # Continue the loop to get final response
-                continue
-            else:
-                # No more tool calls, return final response
-                assistant_message = message.content or "I don't have a response."
-                self.conversation_history.append(
-                    {"role": "assistant", "content": assistant_message}
-                )
-                return assistant_message
-
-    async def run_interactive(self):
-        """Run interactive chat loop"""
-        await self.initialize()
-
-        print("💬 Interactive MCP Client")
-        print("=" * 50)
-        print("Type your message and press Enter")
-        print("Type 'quit' or 'exit' to stop")
-        print("Type 'clear' to clear conversation history")
-        print("=" * 50)
-        print()
-
-        while True:
-            try:
-                # Get user input
-                user_input = input("You: ").strip()
-
-                if not user_input:
-                    continue
-
-                if user_input.lower() in ["quit", "exit"]:
-                    print("\n👋 Goodbye!")
-                    break
-
-                if user_input.lower() == "clear":
-                    self.conversation_history = []
-                    print("🗑️  Conversation history cleared\n")
-                    continue
-
-                # Get AI response
-                print()
-                response = await self.chat(user_input)
-                print(f"Assistant: {response}")
-                print()
-
-            except KeyboardInterrupt:
-                print("\n\n👋 Goodbye!")
-                break
-            except Exception as e:
-                print(f"\n❌ Error: {str(e)}\n")
+    def clear(self):
+        """清空对话上下文"""
+        self.messages.clear()
 
 
-async def main():
-    """Main entry point"""
-    # Get project root directory
-    project_root = Path(__file__).parent.parent
-
-    # Configure OpenAI client (using your custom endpoint)
-    openai_client = AsyncOpenAI(
-        base_url="<your_base_url>",
-        api_key="<your_api_key>",
+# =========================
+# 参数解析
+# =========================
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Skill MCP Client (Beginner Demo)"
     )
 
-    # Configure MCP server parameters (using stdio)
+    parser.add_argument(
+        "--skills-dir",
+        type=Path,
+        required=True,
+        help="技能（tools）所在目录",
+    )
+
+    parser.add_argument(
+        "--workspace",
+        type=Path,
+        default=Path.cwd() / "workspace",
+        help="工作目录（默认 ./workspace）",
+    )
+
+    parser.add_argument(
+        "--model",
+        default="gpt-4o",
+        help="OpenAI 模型名（默认 gpt-4o）",
+    )
+
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="显示调试信息（工具调用、内部状态）",
+    )
+
+    return parser.parse_args()
+
+
+# =========================
+# 主流程
+# =========================
+async def run(args: argparse.Namespace):
+    global QUIET
+    QUIET = not args.verbose
+
+    # 关闭第三方库日志
+    logging.getLogger("mcp").setLevel(logging.ERROR)
+    logging.getLogger("httpx").setLevel(logging.ERROR)
+
+    # 检查 API Key
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        Console.error("缺少环境变量 OPENAI_API_KEY")
+        sys.exit(1)
+
+    if not args.skills_dir.exists():
+        Console.error(f"技能目录不存在: {args.skills_dir}")
+        sys.exit(1)
+
+    args.workspace.mkdir(parents=True, exist_ok=True)
+
+    # OpenAI Client
+    openai_client = AsyncOpenAI(
+        api_key=api_key,
+        base_url=os.environ.get("OPENAI_BASE_URL"),
+    )
+
+    # MCP Server（stdio 模式）
     server_params = StdioServerParameters(
         command="python",
         args=[
             "-m",
             "skill_mcp_server",
             "--skills-dir",
-            str(project_root / "examples" / "skills"),
+            str(args.skills_dir.resolve()),
             "--workspace",
-            str(project_root / "workspace"),
+            str(args.workspace.resolve()),
         ],
+        env={**os.environ, "SKILL_MCP_LOG_LEVEL": "SILENT"},
     )
 
-    # Connect to MCP server via stdio
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
-            # Initialize session
             await session.initialize()
 
-            # Create and run interactive client
-            client = InteractiveMCPClient(openai_client, session)
-            await client.run_interactive()
+            client = MCPClient(openai_client, session, args.model)
+            await client.load_tools()
+
+            # 欢迎信息
+            print()
+            print(f"{Console.BOLD}Skill MCP Client{Console.RESET}")
+            print(f"{Console.DIM}输入问题开始对话，/help 查看命令{Console.RESET}")
+            print()
+
+            while True:
+                try:
+                    user_input = input(Console.prompt()).strip()
+                    if not user_input:
+                        continue
+
+                    if user_input in ("/quit", "/exit", "/q"):
+                        break
+
+                    if user_input == "/clear":
+                        client.clear()
+                        Console.info("对话已清空")
+                        continue
+
+                    if user_input == "/help":
+                        print("/clear  清空对话")
+                        print("/quit   退出程序")
+                        continue
+
+                    reply = await client.chat(user_input)
+                    print()
+                    print(reply)
+                    print()
+
+                except (KeyboardInterrupt, EOFError):
+                    print()
+                    break
+                except Exception as e:
+                    Console.error(str(e))
+
+    Console.info("Bye 👋")
+
+
+def main():
+    args = parse_args()
+    asyncio.run(run(args))
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

@@ -54,9 +54,6 @@ class SkillMCPServer:
         self._init_tools()
         self._init_mcp_server()
 
-        logger.info(f"Skills directory: {self.settings.skills_dir}")
-        logger.info(f"Workspace directory: {self.settings.workspace_dir}")
-
     def _init_validators(self) -> None:
         """Initialize security validators."""
         self.file_validator = FileValidator(

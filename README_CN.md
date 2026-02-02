@@ -14,6 +14,20 @@
 
 ---
 
+## 🎬 演示视频
+
+<p align="center">
+  <a href="docs/example.mov">
+    <img src="https://img.shields.io/badge/📹-观看演示-blue?style=for-the-badge" alt="观看演示">
+  </a>
+</p>
+
+<p align="center">
+  <strong>👉 <a href="docs/example.mov">点击查看演示视频</a> 👈</strong>
+</p>
+
+---
+
 **Skill MCP Server** 是一个 [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) 服务器，让 Claude 等 AI Agent 能够动态加载和使用模块化的 "Skills"。
 
 可以把它理解为 **AI Agent 的插件系统** — 将 Skill 文件夹放入目录，你的 Agent 就立即获得新能力。无需编码，无需重启服务。
