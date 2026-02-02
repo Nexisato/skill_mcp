@@ -17,13 +17,10 @@
 ## 🎬 演示视频
 
 <p align="center">
-  <a href="docs/example.mov">
-    <img src="https://img.shields.io/badge/📹-观看演示-blue?style=for-the-badge" alt="观看演示">
-  </a>
-</p>
-
-<p align="center">
-  <strong>👉 <a href="docs/example.mov">点击查看演示视频</a> 👈</strong>
+  <video width="800" controls>
+    <source src="docs/example.mov" type="video/quicktime">
+    您的浏览器不支持视频播放。<a href="docs/example.mov">点击这里下载视频</a>。
+  </video>
 </p>
 
 ---

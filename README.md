@@ -17,13 +17,10 @@
 ## 🎬 Demo
 
 <p align="center">
-  <a href="docs/example.mov">
-    <img src="https://img.shields.io/badge/📹-Watch Demo-blue?style=for-the-badge" alt="Watch Demo">
-  </a>
-</p>
-
-<p align="center">
-  <strong>👉 <a href="docs/example.mov">点击查看演示视频</a> 👈</strong>
+  <video width="800" controls>
+    <source src="docs/example.mov" type="video/quicktime">
+    Your browser does not support the video tag. <a href="docs/example.mov">Click here to download the video</a>.
+  </video>
 </p>
 
 ---
